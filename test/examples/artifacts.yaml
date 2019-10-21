@@ -1,0 +1,20 @@
+--- # document start
+
+all:
+  default-target: true
+  .PHONY: true
+  depends-on:
+    - test-output/test_target_file.txt
+
+test-output/test_target_file.txt:
+  touch '$@'
+
+test-output/aaa/test_target_file2.txt:
+  mkdir -p '$(@D)'; cd '$(@D)'; touch '$(@F)'
+
+test-output/test_target_file2.txt:
+  shell: touch '$(@)'
+
+test-output/test_target_file_copy.txt:
+  depends-on: test-output/test_target_file2.txt
+  shell: cp -a '$<' '$@'

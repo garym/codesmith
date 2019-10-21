@@ -20,6 +20,7 @@ import argparse
 import logging
 import os
 import re
+import subprocess
 import sys
 
 from digraphtools import digraphtools as dgt
@@ -118,18 +119,58 @@ def convertActionPatterns(target, data):
     return multireplace(action, replacements)
 
 
-def executeTarget(target, data, dryRun):
+def executeTarget(target, data, args):
     debug(f"target = '{target}'")
     debug(data)
     convertedData = convertActionPatterns(target, data)
     debug(f"data = '{convertedData}'")
-    if dryRun:
-        if data.get(".PHONY"):
-            info("Dry Run of .PHONY target")
+    isPhony = data.get(".PHONY")
+    if args.dry_run:
+        if isPhony:
+            info(f"Dry Run of .PHONY '{target}'")
         else:
-            info("Dry Run of normal target; will eventually just touch!")
+            info(f"Dry Run of '{target}'")
+    elif args.touch:
+        if not isPhony:
+            info(f"Touching target '{target}'")
+            print(f"+[ touch '{target}' ]")
+            result = subprocess.run(["touch", target], text=True)
     else:
-        print("Will eventually execute")
+        if convertedData:
+            print(f"-[ '{convertedData}' ]")
+            splitcmd = list(experimentalSplitCmd(convertedData))
+            debug(f"split command for running: {splitcmd}")
+            result = subprocess.run(splitcmd, text=True)
+            debug(f"result: {result}")
+        else:
+            debug(f"no shell action to run for target '{target}'")
+
+
+def experimentalSplitCmd(command):
+    for part in re.split(r"\s*('.*')\s*", command):
+        if not part:
+            continue
+        if part[0] == "'" and part[-1] == "'":
+            if len(part) == 1:
+                print('eek - how did that happen?')
+            elif len(part) == 2:
+                continue
+            else:
+                yield part[1:-1]
+        else:
+            for part2 in re.split(r'\s*(".*")\s*', part):
+                if not part2:
+                    continue
+                if part2[0] == "'" and part2[-1] == "'":
+                    if len(part2) == 1:
+                        print('eek - how did that happen?')
+                    elif len(part2) == 2:
+                        continue
+                    else:
+                        yield part2[1:-1]
+                else:
+                    for part3 in part2.split():
+                        yield part3
 
 
 def processCmdline():
@@ -198,10 +239,10 @@ def processCmdline():
     return args
 
 
-def runTargets(targets, buildData, dryRun):
+def runTargets(targets, buildData, args):
     for target in targets:
         info(f"Current target: '{target}'")
-        executeTarget(target, buildData[target], dryRun)
+        executeTarget(target, buildData[target], args)
 
 
 def main():
@@ -215,7 +256,7 @@ def main():
 
     taskList = getTaskList(depgraph, args.targets)
     for task in taskList:
-        runTargets(task, buildData, args.dry_run)
+        runTargets(task, buildData, args)
 
 
 if __name__ == "__main__":
