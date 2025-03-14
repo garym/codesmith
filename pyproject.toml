@@ -1,3 +1,26 @@
+[tool.poetry]
+name = "codesmith"
+version = "0.1.0"
+description = "A software construction tool"
+authors = ["Gary Martin <gary.martin@physics.org>"]
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{include = "codesmith", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+jinja2 = "^3.1.6"
+pyyaml = "^6.0.2"
+digraphtools = "^0.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+csmake = "codesmith.cli:main"
+
 [tool.black]
 line-length = 88
 target_version = ['py37']
