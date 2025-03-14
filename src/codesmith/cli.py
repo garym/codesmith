@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" test script for building from yaml format file """
+"""test script for building from yaml format file"""
 
 import argparse
 import logging
@@ -152,7 +152,7 @@ def experimentalSplitCmd(command):
             continue
         if part[0] == "'" and part[-1] == "'":
             if len(part) == 1:
-                print('eek - how did that happen?')
+                print("eek - how did that happen?")
             elif len(part) == 2:
                 continue
             else:
@@ -163,7 +163,7 @@ def experimentalSplitCmd(command):
                     continue
                 if part2[0] == "'" and part2[-1] == "'":
                     if len(part2) == 1:
-                        print('eek - how did that happen?')
+                        print("eek - how did that happen?")
                     elif len(part2) == 2:
                         continue
                     else:
